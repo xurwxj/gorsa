@@ -10,7 +10,7 @@ based on https://github.com/farmerx/gorsa Optimized the following points for pac
 Get expansion pack:
 
 ```
-go get github.com/wenzhenxi/gorsa
+go get github.com/xurwxj/gorsa
 ```
 
 Specific use:
@@ -22,7 +22,7 @@ package main
 import (
 	"log"
 	"errors"
-	"github.com/wenzhenxi/gorsa"
+	"github.com/xurwxj/gorsa"
 )
 
 var Pubkey = `-----BEGIN Public key-----

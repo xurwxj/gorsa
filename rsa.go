@@ -2,18 +2,20 @@ package gorsa
 
 import (
 	"bytes"
+	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"io/ioutil"
-	"crypto/sha1"
-	"crypto/rand"
-	"crypto"
-	"encoding/base64"
-	"crypto/sha256"
 )
 
+// RSA obj
 var RSA = &RSASecurity{}
 
+// RSASecurity struct
 type RSASecurity struct {
 	pubStr string          //公钥字符串
 	priStr string          //私钥字符串
@@ -21,31 +23,31 @@ type RSASecurity struct {
 	prikey *rsa.PrivateKey //私钥
 }
 
-// 设置公钥
+// SetPublicKey 设置公钥
 func (rsas *RSASecurity) SetPublicKey(pubStr string) (err error) {
 	rsas.pubStr = pubStr
 	rsas.pubkey, err = rsas.GetPublickey()
 	return err
 }
 
-// 设置私钥
+// SetPrivateKey 设置私钥
 func (rsas *RSASecurity) SetPrivateKey(priStr string) (err error) {
 	rsas.priStr = priStr
 	rsas.prikey, err = rsas.GetPrivatekey()
 	return err
 }
 
-// *rsa.PublicKey
+// GetPrivatekey *rsa.PublicKey
 func (rsas *RSASecurity) GetPrivatekey() (*rsa.PrivateKey, error) {
 	return getPriKey([]byte(rsas.priStr))
 }
 
-// *rsa.PrivateKey
+// GetPublickey *rsa.PrivateKey
 func (rsas *RSASecurity) GetPublickey() (*rsa.PublicKey, error) {
 	return getPubKey([]byte(rsas.pubStr))
 }
 
-// 公钥加密
+// PubKeyENCTYPT 公钥加密
 func (rsas *RSASecurity) PubKeyENCTYPT(input []byte) ([]byte, error) {
 	if rsas.pubkey == nil {
 		return []byte(""), errors.New(`Please set the public key in advance`)
@@ -58,7 +60,7 @@ func (rsas *RSASecurity) PubKeyENCTYPT(input []byte) ([]byte, error) {
 	return ioutil.ReadAll(output)
 }
 
-// 公钥解密
+// PubKeyDECRYPT 公钥解密
 func (rsas *RSASecurity) PubKeyDECRYPT(input []byte) ([]byte, error) {
 	if rsas.pubkey == nil {
 		return []byte(""), errors.New(`Please set the public key in advance`)
@@ -71,7 +73,7 @@ func (rsas *RSASecurity) PubKeyDECRYPT(input []byte) ([]byte, error) {
 	return ioutil.ReadAll(output)
 }
 
-// 私钥加密
+// PriKeyENCTYPT 私钥加密
 func (rsas *RSASecurity) PriKeyENCTYPT(input []byte) ([]byte, error) {
 	if rsas.prikey == nil {
 		return []byte(""), errors.New(`Please set the private key in advance`)
@@ -84,7 +86,7 @@ func (rsas *RSASecurity) PriKeyENCTYPT(input []byte) ([]byte, error) {
 	return ioutil.ReadAll(output)
 }
 
-// 私钥解密
+// PriKeyDECRYPT 私钥解密
 func (rsas *RSASecurity) PriKeyDECRYPT(input []byte) ([]byte, error) {
 	if rsas.prikey == nil {
 		return []byte(""), errors.New(`Please set the private key in advance`)
@@ -98,9 +100,7 @@ func (rsas *RSASecurity) PriKeyDECRYPT(input []byte) ([]byte, error) {
 	return ioutil.ReadAll(output)
 }
 
-/**
- * 使用RSAWithSHA1算法签名
- */
+// SignSha1WithRsa 使用RSAWithSHA1算法签名
 func (rsas *RSASecurity) SignSha1WithRsa(data string) (string, error) {
 	sha1Hash := sha1.New()
 	s_data := []byte(data)
@@ -112,9 +112,7 @@ func (rsas *RSASecurity) SignSha1WithRsa(data string) (string, error) {
 	return string(sign), err
 }
 
-/**
- * 使用RSAWithSHA256算法签名
- */
+// SignSha256WithRsa 使用RSAWithSHA256算法签名
 func (rsas *RSASecurity) SignSha256WithRsa(data string) (string, error) {
 	sha256Hash := sha256.New()
 	s_data := []byte(data)
@@ -126,9 +124,7 @@ func (rsas *RSASecurity) SignSha256WithRsa(data string) (string, error) {
 	return string(sign), err
 }
 
-/**
- * 使用RSAWithSHA1验证签名
- */
+// VerifySignSha1WithRsa 使用RSAWithSHA1验证签名
 func (rsas *RSASecurity) VerifySignSha1WithRsa(data string, signData string) error {
 	sign, err := base64.StdEncoding.DecodeString(signData)
 	if err != nil {
@@ -139,9 +135,7 @@ func (rsas *RSASecurity) VerifySignSha1WithRsa(data string, signData string) err
 	return rsa.VerifyPKCS1v15(rsas.pubkey, crypto.SHA1, hash.Sum(nil), sign)
 }
 
-/**
- * 使用RSAWithSHA256验证签名
- */
+// VerifySignSha256WithRsa 使用RSAWithSHA256验证签名
 func (rsas *RSASecurity) VerifySignSha256WithRsa(data string, signData string) error {
 	sign, err := base64.StdEncoding.DecodeString(signData)
 	if err != nil {

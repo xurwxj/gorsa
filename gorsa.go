@@ -1,10 +1,14 @@
 package gorsa
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 )
 
-// 公钥加密
+//PublicEncrypt 公钥加密
 func PublicEncrypt(data, publicKey string) (string, error) {
 
 	grsa := RSASecurity{}
@@ -18,7 +22,7 @@ func PublicEncrypt(data, publicKey string) (string, error) {
 	return base64.StdEncoding.EncodeToString(rsadata), nil
 }
 
-// 私钥加密
+//PriKeyEncrypt 私钥加密
 func PriKeyEncrypt(data, privateKey string) (string, error) {
 
 	grsa := RSASecurity{}
@@ -32,7 +36,7 @@ func PriKeyEncrypt(data, privateKey string) (string, error) {
 	return base64.StdEncoding.EncodeToString(rsadata), nil
 }
 
-// 公钥解密
+//PublicDecrypt 公钥解密
 func PublicDecrypt(data, publicKey string) (string, error) {
 
 	databs, _ := base64.StdEncoding.DecodeString(data)
@@ -49,7 +53,7 @@ func PublicDecrypt(data, publicKey string) (string, error) {
 
 }
 
-// 私钥解密
+//PriKeyDecrypt 私钥解密
 func PriKeyDecrypt(data, privateKey string) (string, error) {
 
 	databs, _ := base64.StdEncoding.DecodeString(data)
@@ -63,4 +67,30 @@ func PriKeyDecrypt(data, privateKey string) (string, error) {
 	}
 
 	return string(rsadata), nil
+}
+
+// GenRSAKey generate rsa public/private key
+func GenRSAKey() (prvkey, pubkey []byte) {
+	// 生成私钥文件
+	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		panic(err)
+	}
+	derStream := x509.MarshalPKCS1PrivateKey(privateKey)
+	block := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: derStream,
+	}
+	prvkey = pem.EncodeToMemory(block)
+	publicKey := &privateKey.PublicKey
+	derPkix, err := x509.MarshalPKIXPublicKey(publicKey)
+	if err != nil {
+		panic(err)
+	}
+	block = &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: derPkix,
+	}
+	pubkey = pem.EncodeToMemory(block)
+	return
 }
